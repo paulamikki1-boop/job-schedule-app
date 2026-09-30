@@ -406,9 +406,9 @@ function fmtTime(t){
 }
 function myTimeToDE(timeStr, dateObj){
   const [h,m] = timeStr.split(':').map(Number);
-  const myDate = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate(), h, m, 0);
-  const utc = myDate.getTime() - 8*3600000;
-  const deStr = new Date(utc).toLocaleString('en-GB', {hour:'2-digit', minute:'2-digit', hour12:false, timeZone:'Europe/Berlin'});
+  const y = dateObj.getFullYear(), mo = dateObj.getMonth(), d = dateObj.getDate();
+  const utc = new Date(Date.UTC(y, mo, d, h - 8, m, 0));
+  const deStr = utc.toLocaleString('en-GB', {hour:'2-digit', minute:'2-digit', hour12:false, timeZone:'Europe/Berlin'});
   const [dh, dm] = deStr.split(':').map(Number);
   const p = dh>=12?'pm':'am';
   let hr = dh%12; if(hr===0) hr=12;

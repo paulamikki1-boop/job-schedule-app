@@ -404,6 +404,16 @@ function fmtTime(t){
   let hr = h%12; if(hr===0) hr=12;
   return `${hr}${m?':'+String(m).padStart(2,'0'):''}${period}`;
 }
+function myTimeToDE(timeStr, dateObj){
+  const [h,m] = timeStr.split(':').map(Number);
+  const myDate = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate(), h, m, 0);
+  const utc = myDate.getTime() - 8*3600000;
+  const deStr = new Date(utc).toLocaleString('en-GB', {hour:'2-digit', minute:'2-digit', hour12:false, timeZone:'Europe/Berlin'});
+  const [dh, dm] = deStr.split(':').map(Number);
+  const p = dh>=12?'pm':'am';
+  let hr = dh%12; if(hr===0) hr=12;
+  return `${hr}${dm?':'+String(dm).padStart(2,'0'):''}${p}`;
+}
 
 // current week Mon-Sun as yyyy-mm-dd
 function getCurrentWeekRange(){
@@ -703,7 +713,8 @@ function renderSchedule(){
               ${isCancelled?'<span class="badge cancelled">Cancelled</span>':''}
               ${isPostponed?'<span class="badge postponed">Postponed</span>':''}
             </div>
-            <div class="meta">${fmtTime(c.start)}–${fmtTime(c.end)} · ${c.rateType==='flat'?`RM${c.rate} flat`:`RM${c.rate}/hr`}
+            <div class="meta">🇲🇾 ${fmtTime(c.start)}–${fmtTime(c.end)} · 🇩🇪 ${myTimeToDE(c.start, dayDate)}–${myTimeToDE(c.end, dayDate)}</div>
+            <div class="meta">${c.rateType==='flat'?`RM${c.rate} flat`:`RM${c.rate}/hr`}
               ${meetLink ? ` · <a class="meet-link" href="${escapeHtml(meetLink)}" target="_blank" rel="noopener noreferrer">Join Meet</a>` : ''}
             </div>
           </div>

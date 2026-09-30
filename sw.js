@@ -1,4 +1,4 @@
-const CACHE_NAME = 'jobschedule-v8';
+const CACHE_NAME = 'jobschedule-v9';
 
 const PRECACHE = [
   './',

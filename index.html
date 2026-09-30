@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Job Schedule">
+<meta name="theme-color" content="#3E6259">
+<meta name="description" content="Offline tuition schedule, cancellations, and job hours tracker">
+<title>Job Schedule and Earnings</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<link rel="icon" href="./icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EEF1EE;
+    --surface:#FFFFFF;
+    --ink:#1B2A2E;
+    --ink-soft:#5A6B6D;
+    --line:#D9DED9;
+    --accent:#3E6259;
+    --accent-soft:#E4ECE9;
+    --gold:#B8863B;
+    --gold-soft:#F5EBDA;
+    --danger:#A6473F;
+    --danger-soft:#F5E3E1;
+    --info:#4C6B8A;
+    --info-soft:#E4EAF0;
+    --night:#34456B;
+    --night-soft:#EDEFF6;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{max-width:520px;margin:0 auto;padding:20px 16px 60px;}
+
+  .install-banner{
+    display:none;align-items:center;justify-content:space-between;gap:10px;
+    background:var(--accent-soft);border:1px solid var(--accent);border-radius:10px;
+    padding:10px 12px;margin-bottom:16px;font-size:12.5px;color:var(--ink);
+  }
+  .install-banner.visible{display:flex;}
+  .install-banner .btn{padding:7px 12px;font-size:12.5px;flex-shrink:0;}
+  .install-dismiss{background:none;border:none;color:var(--ink-soft);font-size:16px;cursor:pointer;padding:0 4px;flex-shrink:0;}
+
+  header.top{padding:8px 4px 20px;}
+  header.top .label{font-size:12px;letter-spacing:.02em;color:var(--ink-soft);}
+  header.top h1{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:26px;
+    margin:2px 0 14px;
+  }
+  .totals-row{display:flex;gap:10px;}
+  .total-card{
+    flex:1;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:12px 14px;
+  }
+  .total-card .num{
+    font-family:'Fraunces', serif;
+    font-size:22px;
+    font-weight:500;
+  }
+  .total-card .cap{font-size:11.5px;color:var(--ink-soft);margin-top:2px;}
+  .total-card.gold .num{color:var(--gold);}
+  .total-card.danger .num{color:var(--danger);}
+  .month-cap-nav{display:flex;align-items:center;justify-content:center;gap:6px;}
+  .month-nav-btn{background:none;border:none;color:var(--ink-soft);font-size:13px;line-height:1;cursor:pointer;padding:2px;}
+  .month-nav-btn:active{color:var(--accent);}
+
+  nav.tabs{
+    display:flex;
+    gap:4px;
+    margin:22px 0 16px;
+    border-bottom:1px solid var(--line);
+  }
+  nav.tabs button{
+    flex:1;
+    background:none;
+    border:none;
+    font-family:'Work Sans', sans-serif;
+    font-size:13.5px;
+    font-weight:500;
+    color:var(--ink-soft);
+    padding:10px 4px;
+    cursor:pointer;
+    border-bottom:2px solid transparent;
+    margin-bottom:-1px;
+  }
+  nav.tabs button.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+  section.view{display:none;}
+  section.view.active{display:block;}
+
+  .week-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 0 18px;}
+  .week-nav-btn{
+    background:var(--surface);border:1px solid var(--line);border-radius:8px;
+    width:34px;height:34px;font-size:16px;line-height:1;cursor:pointer;color:var(--accent);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .week-nav-label{text-align:center;flex:1;min-width:0;}
+  .week-nav-label .week-range{font-family:'Fraunces',serif;font-size:15px;font-weight:500;}
+  .week-nav-label .week-today-link{
+    display:block;background:none;border:none;color:var(--info);font-size:11.5px;
+    text-decoration:underline;cursor:pointer;padding:2px 0 0;margin:0 auto;
+  }
+
+  .day-group{margin-bottom:18px;}
+  .day-group h2{
+    font-size:13px;
+    text-transform:none;
+    color:var(--ink-soft);
+    font-weight:600;
+    margin:0 0 8px 2px;
+    display:flex;
+    justify-content:space-between;
+  }
+  .day-group h2 .day-total{color:var(--ink);font-weight:600;}
+
+  .class-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:11px 4px;
+    border-top:1px solid var(--line);
+  }
+  .day-group .class-row:first-of-type{border-top:1px solid var(--line);}
+  .class-row .bar{width:3px;align-self:stretch;background:var(--accent);border-radius:2px;flex-shrink:0;}
+  .class-row.is-day{background:var(--gold-soft);}
+  .class-row.is-day .bar{background:var(--gold);}
+  .class-row.is-night{background:var(--night-soft);}
+  .class-row.is-night .bar{background:var(--night);}
+  .class-row.is-cancelled{background:var(--danger-soft);}
+  .class-row.is-cancelled .bar{background:var(--danger);}
+  .class-row.is-postponed{background:var(--info-soft);}
+  .class-row.is-postponed .bar{background:var(--info);}
+  .class-row .info{flex:1;min-width:0;}
+  .class-row .name{font-weight:600;font-size:15px;}
+  .class-row .meta{font-size:12.5px;color:var(--ink-soft);margin-top:1px;}
+  .class-row .meta .meet-link{color:var(--info);text-decoration:underline;font-weight:500;}
+  .class-row .paid-toggle{
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    font-size:9.5px;letter-spacing:.02em;color:var(--ink-soft);flex-shrink:0;
+  }
+  .class-row .paid-toggle input{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;}
+  .class-row.is-cancelled .paid-toggle{opacity:.45;}
+  .class-row .badge{
+    display:inline-block;font-size:10.5px;font-weight:600;
+    padding:1px 7px;border-radius:20px;margin-left:6px;
+    vertical-align:middle;
+  }
+  .badge.cancelled{background:var(--danger-soft);color:var(--danger);}
+  .badge.postponed{background:var(--info-soft);color:var(--info);}
+  .class-row .amount{font-family:'Fraunces', serif;font-size:16px;font-weight:500;white-space:nowrap;}
+  .class-row.is-cancelled .amount{color:var(--ink-soft);text-decoration:line-through;}
+
+  .empty-state{
+    text-align:center;padding:40px 20px;color:var(--ink-soft);font-size:14px;
+  }
+
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;
+    background:var(--accent);color:#fff;border:none;border-radius:8px;
+    padding:11px 16px;font-size:14px;font-weight:500;cursor:pointer;
+    font-family:'Work Sans', sans-serif;
+  }
+  .btn.secondary{background:none;color:var(--accent);border:1px solid var(--accent);}
+  .btn.danger-outline{background:none;color:var(--danger);border:1px solid var(--danger);}
+  .btn.block{width:100%;margin-top:12px;}
+  .btn.small{padding:6px 10px;font-size:12.5px;border-radius:6px;}
+
+  .fab-row{margin-top:8px;}
+
+  .manage-list .manage-row{
+    display:flex;align-items:center;gap:10px;
+    padding:12px 4px;border-top:1px solid var(--line);
+  }
+  .manage-list .manage-row:first-child{border-top:1px solid var(--line);}
+  .manage-row .info{flex:1;}
+  .manage-row .name{font-weight:600;font-size:14.5px;}
+  .manage-row .meta{font-size:12px;color:var(--ink-soft);margin-top:1px;}
+  .manage-row .actions{display:flex;gap:6px;}
+  .icon-btn{
+    background:var(--accent-soft);border:none;border-radius:6px;
+    width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+    cursor:pointer;color:var(--accent);font-size:14px;
+  }
+  .icon-btn.del{background:var(--danger-soft);color:var(--danger);}
+  .manage-row.is-ended{opacity:.6;}
+  .manage-row.is-ended .name{text-decoration:line-through;text-decoration-color:var(--ink-soft);}
+
+  .card-form{
+    background:var(--surface);border:1px solid var(--line);border-radius:12px;
+    padding:16px;margin-bottom:16px;
+  }
+  .card-form h3{margin:0 0 12px;font-size:15px;font-family:'Fraunces',serif;font-weight:500;}
+  .field-row{display:flex;gap:10px;margin-bottom:10px;}
+  .field{flex:1;display:flex;flex-direction:column;gap:4px;}
+  .field label{font-size:11.5px;color:var(--ink-soft);}
+  .field input, .field select, .field textarea{
+    font-family:'Work Sans', sans-serif;
+    font-size:14px;padding:9px 10px;border:1px solid var(--line);border-radius:7px;
+    background:#fff;color:var(--ink);
+  }
+  .field select{appearance:none;}
+  .form-actions{display:flex;gap:8px;margin-top:6px;}
+  .form-actions .btn{flex:1;}
+
+  .log-entry{
+    background:var(--surface);border:1px solid var(--line);border-radius:10px;
+    padding:12px 14px;margin-bottom:10px;
+  }
+  .log-entry .top-row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+  .log-entry .name{font-weight:600;font-size:14.5px;}
+  .log-entry .date{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+  .log-entry .note{font-size:13px;margin-top:8px;color:var(--ink);}
+  .log-entry .move-line{font-size:12.5px;color:var(--info);margin-top:6px;}
+  .log-entry .row-actions{margin-top:10px;display:flex;justify-content:flex-end;}
+
+  .section-title{
+    font-family:'Fraunces', serif;font-size:16px;font-weight:500;margin:4px 0 12px;
+  }
+  .helper-text{font-size:12.5px;color:var(--ink-soft);margin:-4px 0 14px;}
+
+  .toggle-group{display:flex;gap:8px;}
+  .toggle-group button{
+    flex:1;padding:8px 6px;border:1px solid var(--line);background:#fff;
+    border-radius:7px;font-size:13px;cursor:pointer;color:var(--ink-soft);
+  }
+  .toggle-group button.selected{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+  .reset-link{
+    display:block;text-align:center;font-size:12px;color:var(--ink-soft);
+    margin-top:28px;text-decoration:underline;cursor:pointer;background:none;border:none;width:100%;
+  }
+  .loading{text-align:center;padding:60px 0;color:var(--ink-soft);font-size:13px;}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="loading" id="loadingMsg">Loading your ledger…</div>
+</div>
+
+<script>
+const DAY_ORDER = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const DAY_FULL = {Mon:'Monday',Tue:'Tuesday',Wed:'Wednesday',Thu:'Thursday',Fri:'Friday',Sat:'Saturday',Sun:'Sunday'};
+
+let classes = [];
+let logs = [];
+let workLogs = [];
+let paidLogs = [];
+let currentTab = 'schedule';
+let editingClassId = null;
+let showClassForm = false;
+let showLogForm = false;
+let showWorkForm = false;
+let editingWorkId = null;
+const DEFAULT_SEO_RATE = 23;
+
+function mondayOf(d){
+  const nd = new Date(d);
+  const day = nd.getDay();
+  const diff = (day===0 ? -6 : 1-day);
+  nd.setDate(nd.getDate()+diff);
+  nd.setHours(0,0,0,0);
+  return nd;
+}
+function addDays(d, n){ const nd = new Date(d); nd.setDate(nd.getDate()+n); return nd; }
+function toLocalISO(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function fmtShortDate(d){ return d.toLocaleDateString('de-DE', {month:'short', day:'numeric'}); }
+function fmtWeekRangeLabel(monday){
+  const sunday = addDays(monday, 6);
+  const sameMonth = monday.getMonth()===sunday.getMonth();
+  const startStr = monday.toLocaleDateString('de-DE', {month:'short', day:'numeric'});
+  const endStr = sunday.toLocaleDateString('de-DE', sameMonth ? {day:'numeric'} : {month:'short', day:'numeric'});
+  return `${startStr}–${endStr}, ${sunday.getFullYear()}`;
+}
+
+let viewedWeekMonday = mondayOf(new Date());
+
+function startOfMonth(d){ return new Date(d.getFullYear(), d.getMonth(), 1, 0,0,0,0); }
+function addMonths(d, n){ return new Date(d.getFullYear(), d.getMonth()+n, 1, 0,0,0,0); }
+function monthRangeFor(monthStart){
+  const start = monthStart;
+  const end = new Date(monthStart.getFullYear(), monthStart.getMonth()+1, 0, 23,59,59,999);
+  return {start, end};
+}
+function fmtMonthLabel(monthStart){ return monthStart.toLocaleDateString('de-DE', {month:'short', year:'numeric'}); }
+
+let viewedMonth = startOfMonth(new Date());
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, (ch) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function safeMeetLink(url){
+  if(!url) return '';
+  const trimmed = String(url).trim();
+  if(!/^https?:\/\//i.test(trimmed)) return '';
+  return trimmed;
+}
+
+const DEFAULT_CLASSES = [
+  {id:'c1', name:'Charmaine', subject:'Tuition', day:'Mon', start:'11:00', end:'12:00', rateType:'hourly', rate:60},
+  {id:'c2', name:'Charmaine', subject:'Tuition', day:'Mon', start:'12:45', end:'13:45', rateType:'hourly', rate:60},
+  {id:'c3', name:'Charmaine', subject:'Tuition', day:'Tue', start:'11:00', end:'12:00', rateType:'hourly', rate:60},
+  {id:'c4', name:'Charmaine', subject:'Tuition', day:'Tue', start:'12:45', end:'13:45', rateType:'hourly', rate:60},
+  {id:'c5', name:'Charmaine', subject:'Tuition', day:'Wed', start:'11:00', end:'12:00', rateType:'hourly', rate:60},
+  {id:'c6', name:'Charmaine', subject:'Tuition', day:'Wed', start:'12:45', end:'13:45', rateType:'hourly', rate:60},
+  {id:'c7', name:'Wei Yan', subject:'Physics', day:'Mon', start:'18:00', end:'19:30', rateType:'flat', rate:135},
+  {id:'c8', name:'Venka', subject:'Science Yr8', day:'Thu', start:'21:30', end:'22:30', rateType:'hourly', rate:50},
+  {id:'c9', name:'(add name)', subject:'Science Yr7', day:'Wed', start:'20:30', end:'21:30', rateType:'hourly', rate:70},
+  {id:'c10', name:'Teane', subject:'Business/Physics', day:'Thu', start:'18:00', end:'19:00', rateType:'hourly', rate:70},
+  {id:'c11', name:'Teane', subject:'Business/Physics', day:'Sat', start:'19:00', end:'20:00', rateType:'hourly', rate:70},
+  {id:'c12', name:'Yuruo', subject:'Science Yr6', day:'Thu', start:'20:15', end:'21:15', rateType:'hourly', rate:65},
+  {id:'c13', name:'(add name)', subject:'Phy/Acc', day:'Fri', start:'17:00', end:'18:00', rateType:'hourly', rate:70},
+  {id:'c14', name:'Andrea', subject:'', day:'Sat', start:'20:00', end:'21:00', rateType:'hourly', rate:75},
+  {id:'c15', name:'Kasturi', subject:'', day:'Sun', start:'19:00', end:'20:00', rateType:'hourly', rate:0},
+];
+
+function uid(){return 'id'+Math.random().toString(36).slice(2,10);}
+
+async function loadData(){
+  try{
+    const c = localStorage.getItem('tuitionledger_classes');
+    classes = c ? JSON.parse(c) : DEFAULT_CLASSES.slice();
+  }catch(e){ classes = DEFAULT_CLASSES.slice(); }
+  try{
+    const l = localStorage.getItem('tuitionledger_logs');
+    logs = l ? JSON.parse(l) : [];
+  }catch(e){ logs = []; }
+  try{
+    const w = localStorage.getItem('tuitionledger_worklogs');
+    workLogs = w ? JSON.parse(w) : [];
+  }catch(e){ workLogs = []; }
+  try{
+    const p = localStorage.getItem('tuitionledger_paid');
+    paidLogs = p ? JSON.parse(p) : [];
+  }catch(e){ paidLogs = []; }
+  render();
+}
+
+async function saveClasses(){
+  try{ localStorage.setItem('tuitionledger_classes', JSON.stringify(classes)); }
+  catch(e){ console.error('save classes failed', e); }
+}
+async function saveLogs(){
+  try{ localStorage.setItem('tuitionledger_logs', JSON.stringify(logs)); }
+  catch(e){ console.error('save logs failed', e); }
+}
+async function saveWorkLogs(){
+  try{ localStorage.setItem('tuitionledger_worklogs', JSON.stringify(workLogs)); }
+  catch(e){ console.error('save worklogs failed', e); }
+}
+async function savePaidLogs(){
+  try{ localStorage.setItem('tuitionledger_paid', JSON.stringify(paidLogs)); }
+  catch(e){ console.error('save paid logs failed', e); }
+}
+function isPaidForWeek(classId, weekStartIso){
+  return paidLogs.some(p => p.classId===classId && p.weekStart===weekStartIso);
+}
+async function togglePaidForWeek(classId, weekStartIso){
+  const idx = paidLogs.findIndex(p => p.classId===classId && p.weekStart===weekStartIso);
+  if(idx>=0) paidLogs.splice(idx,1);
+  else paidLogs.push({id:uid(), classId, weekStart:weekStartIso});
+  await savePaidLogs();
+  renderSchedule();
+}
+
+function durationHours(start, end){
+  const [sh,sm] = start.split(':').map(Number);
+  const [eh,em] = end.split(':').map(Number);
+  let mins = (eh*60+em) - (sh*60+sm);
+  if(mins < 0) mins += 24*60;
+  return mins/60;
+}
+function classEarning(cls){
+  if(cls.rateType === 'flat') return Number(cls.rate)||0;
+  return (Number(cls.rate)||0) * durationHours(cls.start, cls.end);
+}
+function fmtMoney(n){
+  return 'RM' + n.toLocaleString('en-MY', {minimumFractionDigits: n%1?2:0, maximumFractionDigits:2});
+}
+function fmtTime(t){
+  const [h,m] = t.split(':').map(Number);
+  const period = h>=12?'pm':'am';
+  let hr = h%12; if(hr===0) hr=12;
+  return `${hr}${m?':'+String(m).padStart(2,'0'):''}${period}`;
+}
+
+// current week Mon-Sun as yyyy-mm-dd
+function getCurrentWeekRange(){
+  const now = new Date();
+  const day = now.getDay(); // 0 sun .. 6 sat
+  const diffToMonday = (day===0? -6 : 1-day);
+  const monday = new Date(now); monday.setDate(now.getDate()+diffToMonday); monday.setHours(0,0,0,0);
+  const sunday = new Date(monday); sunday.setDate(monday.getDate()+6); sunday.setHours(23,59,59,999);
+  return {monday, sunday};
+}
+function dateInRange(dateStr, start, end){
+  const d = new Date(dateStr+'T12:00:00');
+  return d >= start && d <= end;
+}
+
+function weekOccurrenceDate(weekMonday, dayAbbrev){
+  return addDays(weekMonday, DAY_ORDER.indexOf(dayAbbrev));
+}
+function classActiveOn(cls, dateObj){
+  if(cls.startDate){
+    const start = new Date(cls.startDate+'T00:00:00');
+    if(dateObj < start) return false;
+  }
+  if(cls.endDate){
+    const end = new Date(cls.endDate+'T23:59:59');
+    if(dateObj > end) return false;
+  }
+  return true;
+}
+function isClassEnded(cls){
+  if(!cls.endDate) return false;
+  return new Date(cls.endDate+'T23:59:59').getTime() < Date.now();
+}
+
+function weeklyScheduledTotal(monday){
+  return classes.reduce((sum,c)=>{
+    if(!classActiveOn(c, weekOccurrenceDate(monday, c.day))) return sum;
+    return sum + classEarning(c);
+  }, 0);
+}
+function thisWeekCancelledTotal(){
+  const {monday, sunday} = getCurrentWeekRange();
+  let total = 0;
+  logs.forEach(l=>{
+    if(l.status==='cancelled' && dateInRange(l.date, monday, sunday)){
+      const cls = classes.find(c=>c.id===l.classId);
+      if(cls) total += classEarning(cls);
+    }
+  });
+  return total;
+}
+
+function workEntryHours(w){ return durationHours(w.clockIn, w.clockOut); }
+function workEntryEarning(w){ return workEntryHours(w) * (Number(w.rate)||0); }
+function workWeeklyTotal(){
+  const {monday, sunday} = getCurrentWeekRange();
+  return workLogs.filter(w=>dateInRange(w.date, monday, sunday)).reduce((s,w)=>s+workEntryEarning(w),0);
+}
+function workMonthlyTotal(start, end){
+  return workLogs.filter(w=>dateInRange(w.date, start, end)).reduce((s,w)=>s+workEntryEarning(w),0);
+}
+
+function monthlyTuitionTotal(start, end){
+  let total = 0;
+  let d = new Date(start);
+  while(d <= end){
+    const dayAbbrev = DAY_ORDER[(d.getDay()+6)%7];
+    const dateStr = toLocalISO(d);
+    classes.filter(c=>c.day===dayAbbrev && classActiveOn(c, d)).forEach(c=>{
+      const logEntry = logs.find(l=>l.classId===c.id && l.date===dateStr);
+      if(logEntry && logEntry.status==='cancelled') return;
+      total += classEarning(c);
+    });
+    d.setDate(d.getDate()+1);
+  }
+  return total;
+}
+
+function classLogStatusForWeek(classId, monday){
+  const sunday = addDays(monday, 6);
+  sunday.setHours(23,59,59,999);
+  const entry = logs.find(l => l.classId===classId && dateInRange(l.date, monday, sunday));
+  return entry || null;
+}
+
+function render(){
+  const app = document.getElementById('app');
+  const scheduledTotal = weeklyScheduledTotal(mondayOf(new Date()));
+  const cancelledTotal = thisWeekCancelledTotal();
+  const adjustedTotal = scheduledTotal - cancelledTotal;
+  const workWeek = workWeeklyTotal();
+  const {start: monthStart, end: monthEnd} = monthRangeFor(viewedMonth);
+  const workMonth = workMonthlyTotal(monthStart, monthEnd);
+  const monthTuition = monthlyTuitionTotal(monthStart, monthEnd);
+  const weekCombined = adjustedTotal + workWeek;
+  const monthCombined = monthTuition + workMonth;
+  const isCurrentMonth = startOfMonth(new Date()).getTime() === viewedMonth.getTime();
+
+  app.innerHTML = `
+    <div class="install-banner" id="installBanner">
+      <span>Install this app on your home screen for offline use.</span>
+      <span style="display:flex;gap:8px;align-items:center;">
+        <button class="btn" id="installBtn">Install</button>
+        <button class="install-dismiss" id="installDismiss">&times;</button>
+      </span>
+    </div>
+
+    <header class="top">
+      <div class="label">Overview</div>
+      <h1>Job Schedule and Earnings</h1>
+      <div style="display:flex;justify-content:center;gap:16px;font-size:13px;color:var(--ink-soft);margin:-4px 0 8px;">
+        <span id="myClock"></span>
+        <span id="deClock"></span>
+      </div>
+      <div class="totals-row">
+        <div class="total-card gold">
+          <div class="num">${fmtMoney(weekCombined)}</div>
+          <div class="cap">Total this week</div>
+        </div>
+        <div class="total-card gold">
+          <div class="num">${fmtMoney(monthCombined)}</div>
+          <div class="cap month-cap-nav">
+            <button class="month-nav-btn" id="prevMonthBtn" aria-label="Previous month">&lsaquo;</button>
+            <span>${fmtMonthLabel(viewedMonth)}</span>
+            <button class="month-nav-btn" id="nextMonthBtn" aria-label="Next month">&rsaquo;</button>
+          </div>
+          ${!isCurrentMonth ? `<button class="week-today-link" id="thisMonthBtn">Jump to this month</button>` : ''}
+        </div>
+      </div>
+      <div class="totals-row" style="margin-top:10px;">
+        <div class="total-card">
+          <div class="num">${fmtMoney(adjustedTotal)}</div>
+          <div class="cap">Tuition this week</div>
+        </div>
+        <div class="total-card">
+          <div class="num">${fmtMoney(workWeek)}</div>
+          <div class="cap">SEO job this week</div>
+        </div>
+        ${cancelledTotal>0 ? `
+        <div class="total-card danger">
+          <div class="num">-${fmtMoney(cancelledTotal)}</div>
+          <div class="cap">Lost to cancellations</div>
+        </div>` : ''}
+      </div>
+    </header>
+
+    <nav class="tabs">
+      <button data-tab="schedule" class="${currentTab==='schedule'?'active':''}">Schedule</button>
+      <button data-tab="manage" class="${currentTab==='manage'?'active':''}">Classes</button>
+      <button data-tab="log" class="${currentTab==='log'?'active':''}">Cancel / Postpone</button>
+      <button data-tab="work" class="${currentTab==='work'?'active':''}">SEO Job</button>
+    </nav>
+
+    <section class="view ${currentTab==='schedule'?'active':''}" id="scheduleView"></section>
+    <section class="view ${currentTab==='manage'?'active':''}" id="manageView"></section>
+    <section class="view ${currentTab==='log'?'active':''}" id="logView"></section>
+    <section class="view ${currentTab==='work'?'active':''}" id="workView"></section>
+
+    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:8px;">
+      <button class="btn secondary" id="backupBtn" style="font-size:12px;padding:8px 14px;">Backup data</button>
+      <button class="btn secondary" id="restoreBtn" style="font-size:12px;padding:8px 14px;">Restore data</button>
+    </div>
+    <input type="file" id="restoreFileInput" accept=".json" style="display:none;">
+    <button class="reset-link" id="resetBtn">Reset all data</button>
+  `;
+
+  document.querySelectorAll('nav.tabs button').forEach(b=>{
+    b.addEventListener('click', ()=>{ currentTab=b.dataset.tab; showClassForm=false; showLogForm=false; editingClassId=null; render(); });
+  });
+
+  const prevMonthBtn = document.getElementById('prevMonthBtn');
+  const nextMonthBtn = document.getElementById('nextMonthBtn');
+  const thisMonthBtn = document.getElementById('thisMonthBtn');
+  if(prevMonthBtn) prevMonthBtn.addEventListener('click', ()=>{ viewedMonth = addMonths(viewedMonth, -1); render(); });
+  if(nextMonthBtn) nextMonthBtn.addEventListener('click', ()=>{ viewedMonth = addMonths(viewedMonth, 1); render(); });
+  if(thisMonthBtn) thisMonthBtn.addEventListener('click', ()=>{ viewedMonth = startOfMonth(new Date()); render(); });
+  document.getElementById('backupBtn').addEventListener('click', ()=>{
+    const backup = {
+      version: 1,
+      date: toLocalISO(new Date()),
+      classes, logs, workLogs, paidLogs
+    };
+    const json = JSON.stringify(backup, null, 2);
+    const blob = new Blob([json], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'job-schedule-backup-'+toLocalISO(new Date())+'.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+  document.getElementById('restoreBtn').addEventListener('click', ()=>{
+    document.getElementById('restoreFileInput').click();
+  });
+  document.getElementById('restoreFileInput').addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev)=>{
+      try{
+        const data = JSON.parse(ev.target.result);
+        if(!data.classes || !Array.isArray(data.classes)){
+          alert('Invalid backup file.'); return;
+        }
+        if(!confirm('This will replace ALL current data with the backup. Continue?')) return;
+        classes = data.classes || [];
+        logs = data.logs || [];
+        workLogs = data.workLogs || [];
+        paidLogs = data.paidLogs || [];
+        await saveClasses(); await saveLogs(); await saveWorkLogs(); await savePaidLogs();
+        render();
+        alert('Data restored successfully!');
+      }catch(err){
+        alert('Could not read backup file: '+err.message);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+  document.getElementById('resetBtn').addEventListener('click', async ()=>{
+    if(confirm('This clears all your classes, log entries, and work hours. Continue?')){
+      classes = DEFAULT_CLASSES.slice(); logs = []; workLogs = []; paidLogs = [];
+      await saveClasses(); await saveLogs(); await saveWorkLogs(); await savePaidLogs(); render();
+    }
+  });
+
+  renderSchedule();
+  renderManage();
+  renderLog();
+  renderWork();
+  setupInstallBanner();
+  updateGermanClock();
+}
+
+let clockInterval = null;
+function updateGermanClock(){
+  const myEl = document.getElementById('myClock');
+  const deEl = document.getElementById('deClock');
+  if(!myEl || !deEl) return;
+  const timeOpts = {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false};
+  function tick(){
+    const now = new Date();
+    myEl.textContent = '🇲🇾 ' + now.toLocaleString('en-MY', {...timeOpts, timeZone:'Asia/Kuala_Lumpur'});
+    deEl.textContent = '🇩🇪 ' + now.toLocaleString('de-DE', {...timeOpts, timeZone:'Europe/Berlin'});
+  }
+  tick();
+  if(!clockInterval){ clockInterval = setInterval(tick, 1000); }
+}
+
+function renderSchedule(){
+  const el = document.getElementById('scheduleView');
+  const monday = viewedWeekMonday;
+  const weekStartIso = toLocalISO(monday);
+  const isCurrentWeek = weekStartIso === toLocalISO(mondayOf(new Date()));
+
+  const navHtml = `
+    <div class="week-nav">
+      <button class="week-nav-btn" id="prevWeekBtn" aria-label="Previous week">&lsaquo;</button>
+      <div class="week-nav-label">
+        <div class="week-range">${fmtWeekRangeLabel(monday)}</div>
+        ${!isCurrentWeek ? `<button class="week-today-link" id="todayWeekBtn">Jump to this week</button>` : ''}
+      </div>
+      <button class="week-nav-btn" id="nextWeekBtn" aria-label="Next week">&rsaquo;</button>
+    </div>`;
+
+  if(classes.length===0){
+    el.innerHTML = navHtml + `<div class="empty-state">No classes yet. Add one under the "Classes" tab.</div>`;
+    attachWeekNavHandlers();
+    return;
+  }
+
+  let html = navHtml;
+  DAY_ORDER.forEach((day, i)=>{
+    const dayDate = addDays(monday, i);
+    const dayClasses = classes.filter(c=>c.day===day && classActiveOn(c, dayDate)).sort((a,b)=>a.start.localeCompare(b.start));
+    if(dayClasses.length===0) return;
+    const dayTotal = dayClasses.reduce((sum,c)=>{
+      const logEntry = classLogStatusForWeek(c.id, monday);
+      if(logEntry && logEntry.status==='cancelled') return sum;
+      return sum + classEarning(c);
+    },0);
+    html += `<div class="day-group"><h2>${DAY_FULL[day]}, ${fmtShortDate(dayDate)} <span class="day-total">${fmtMoney(dayTotal)}</span></h2>`;
+    dayClasses.forEach(c=>{
+      const logEntry = classLogStatusForWeek(c.id, monday);
+      const isCancelled = logEntry && logEntry.status==='cancelled';
+      const isPostponed = logEntry && logEntry.status==='postponed';
+      const isNight = Number(c.start.split(':')[0]) >= 16;
+      const paid = isPaidForWeek(c.id, weekStartIso);
+      const meetLink = safeMeetLink(c.meetLink);
+      html += `
+        <div class="class-row ${isCancelled?'is-cancelled':''} ${isPostponed?'is-postponed':''} ${isNight?'is-night':'is-day'}">
+          <div class="bar"></div>
+          <div class="info">
+            <div class="name">${c.name}${c.subject?` · ${c.subject}`:''}
+              ${isCancelled?'<span class="badge cancelled">Cancelled</span>':''}
+              ${isPostponed?'<span class="badge postponed">Postponed</span>':''}
+            </div>
+            <div class="meta">${fmtTime(c.start)}–${fmtTime(c.end)} · ${c.rateType==='flat'?`RM${c.rate} flat`:`RM${c.rate}/hr`}
+              ${meetLink ? ` · <a class="meet-link" href="${escapeHtml(meetLink)}" target="_blank" rel="noopener noreferrer">Join Meet</a>` : ''}
+            </div>
+          </div>
+          <label class="paid-toggle" title="Mark paid for this week">
+            <input type="checkbox" data-paid-class="${c.id}" ${paid?'checked':''}>
+            <span>Paid</span>
+          </label>
+          <div class="amount">${fmtMoney(classEarning(c))}</div>
+        </div>`;
+    });
+    html += `</div>`;
+  });
+  el.innerHTML = html;
+  attachWeekNavHandlers();
+  document.querySelectorAll('[data-paid-class]').forEach(cb=>{
+    cb.addEventListener('change', ()=>{ togglePaidForWeek(cb.getAttribute('data-paid-class'), weekStartIso); });
+  });
+}
+
+function attachWeekNavHandlers(){
+  const prevBtn = document.getElementById('prevWeekBtn');
+  const nextBtn = document.getElementById('nextWeekBtn');
+  const todayBtn = document.getElementById('todayWeekBtn');
+  if(prevBtn) prevBtn.addEventListener('click', ()=>{ viewedWeekMonday = addDays(viewedWeekMonday, -7); renderSchedule(); });
+  if(nextBtn) nextBtn.addEventListener('click', ()=>{ viewedWeekMonday = addDays(viewedWeekMonday, 7); renderSchedule(); });
+  if(todayBtn) todayBtn.addEventListener('click', ()=>{ viewedWeekMonday = mondayOf(new Date()); renderSchedule(); });
+}
+
+function renderManage(){
+  const el = document.getElementById('manageView');
+  const editing = editingClassId ? classes.find(c=>c.id===editingClassId) : null;
+
+  let formHtml = '';
+  if(showClassForm){
+    const c = editing || {name:'',subject:'',day:'Mon',start:'09:00',end:'10:00',rateType:'hourly',rate:'',meetLink:'',startDate:'',endDate:''};
+    formHtml = `
+      <div class="card-form">
+        <h3>${editing?'Edit class':'Add a class'}</h3>
+        <div class="field-row">
+          <div class="field"><label>Student name</label><input id="f_name" value="${escapeHtml(c.name)}" placeholder="e.g. Charmaine"></div>
+          <div class="field"><label>Subject (optional)</label><input id="f_subject" value="${escapeHtml(c.subject||'')}" placeholder="e.g. Physics"></div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Day</label>
+            <select id="f_day">
+              ${DAY_ORDER.map(d=>`<option value="${d}" ${c.day===d?'selected':''}>${DAY_FULL[d]}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Start time</label><input type="time" id="f_start" value="${c.start}"></div>
+          <div class="field"><label>End time</label><input type="time" id="f_end" value="${c.end}"></div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Rate type</label>
+            <div class="toggle-group">
+              <button type="button" data-rate="hourly" class="${c.rateType==='hourly'?'selected':''}">Per hour</button>
+              <button type="button" data-rate="flat" class="${c.rateType==='flat'?'selected':''}">Flat rate</button>
+            </div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Amount (RM)</label><input type="number" step="0.01" id="f_rate" value="${c.rate}" placeholder="0"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Start date (optional)</label><input type="date" id="f_startdate" value="${c.startDate||''}"></div>
+          <div class="field"><label>End date (optional)</label><input type="date" id="f_enddate" value="${c.endDate||''}"></div>
+        </div>
+        <div class="helper-text" style="margin:-2px 0 10px;">Leave blank if this class runs indefinitely. Set an end date instead of deleting a class — past weeks and months keep their earnings either way.</div>
+        <div class="field-row">
+          <div class="field"><label>Google Meet link (optional, recurring)</label><input type="url" id="f_meet" value="${escapeHtml(c.meetLink||'')}" placeholder="https://meet.google.com/xxx-xxxx-xxx"></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn secondary" id="cancelFormBtn">Cancel</button>
+          <button class="btn" id="saveClassBtn">${editing?'Save changes':'Add class'}</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function manageRowHtml(c, opts){
+    opts = opts || {};
+    const meetLink = safeMeetLink(c.meetLink);
+    const rangeNote = [
+      c.startDate ? `From ${fmtShortDate(new Date(c.startDate+'T12:00:00'))}` : '',
+      c.endDate ? `${opts.ended ? 'Ended' : 'Ends'} ${fmtShortDate(new Date(c.endDate+'T12:00:00'))}` : '',
+    ].filter(Boolean).join(' · ');
+    return `
+      <div class="manage-row${opts.ended ? ' is-ended' : ''}">
+        <div class="info">
+          <div class="name">${escapeHtml(c.name)}${c.subject?` · ${escapeHtml(c.subject)}`:''}</div>
+          <div class="meta">${DAY_FULL[c.day]} · ${fmtTime(c.start)}–${fmtTime(c.end)} · ${c.rateType==='flat'?`RM${c.rate} flat`:`RM${c.rate}/hr`} · ${fmtMoney(classEarning(c))}
+            ${meetLink ? ` · <a class="meet-link" href="${escapeHtml(meetLink)}" target="_blank" rel="noopener noreferrer">Meet</a>` : ''}
+            ${rangeNote ? `<br>${rangeNote}` : ''}
+          </div>
+        </div>
+        <div class="actions">
+          <button class="icon-btn edit" data-id="${c.id}" title="Edit">✎</button>
+          <button class="icon-btn del" data-id="${c.id}" title="Remove permanently">✕</button>
+        </div>
+      </div>`;
+  }
+
+  const activeClasses = classes.filter(c=>!isClassEnded(c));
+  const endedClasses = classes.filter(c=>isClassEnded(c));
+
+  let listHtml = '<div class="manage-list">';
+  if(classes.length===0){
+    listHtml += `<div class="empty-state">No classes added yet.</div>`;
+  } else {
+    DAY_ORDER.forEach(day=>{
+      activeClasses.filter(c=>c.day===day).sort((a,b)=>a.start.localeCompare(b.start)).forEach(c=>{
+        listHtml += manageRowHtml(c);
+      });
+    });
+  }
+  listHtml += '</div>';
+
+  let endedHtml = '';
+  if(endedClasses.length>0){
+    endedHtml = `
+      <div class="section-title" style="margin-top:24px;">Ended classes</div>
+      <div class="helper-text" style="margin:-4px 0 10px;">Kept for your records — past weeks and months still count their earnings. Edit to reactivate (clear the end date), or remove permanently to erase them for good.</div>
+      <div class="manage-list">
+        ${endedClasses.sort((a,b)=> b.endDate.localeCompare(a.endDate)).map(c=>manageRowHtml(c, {ended:true})).join('')}
+      </div>`;
+  }
+
+  el.innerHTML = `
+    <div class="section-title">Your classes</div>
+    ${!showClassForm ? `<button class="btn block" id="addClassBtn">Add a class</button>` : ''}
+    ${formHtml}
+    ${listHtml}
+    ${endedHtml}
+  `;
+
+  if(!showClassForm){
+    document.getElementById('addClassBtn').addEventListener('click', ()=>{
+      showClassForm = true; editingClassId = null; render();
+    });
+  } else {
+    let selectedRate = editing ? editing.rateType : 'hourly';
+    document.querySelectorAll('[data-rate]').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        selectedRate = b.dataset.rate;
+        document.querySelectorAll('[data-rate]').forEach(x=>x.classList.remove('selected'));
+        b.classList.add('selected');
+      });
+    });
+    document.getElementById('cancelFormBtn').addEventListener('click', ()=>{
+      showClassForm=false; editingClassId=null; render();
+    });
+    document.getElementById('saveClassBtn').addEventListener('click', async ()=>{
+      const name = document.getElementById('f_name').value.trim();
+      const subject = document.getElementById('f_subject').value.trim();
+      const day = document.getElementById('f_day').value;
+      const start = document.getElementById('f_start').value;
+      const end = document.getElementById('f_end').value;
+      const rate = parseFloat(document.getElementById('f_rate').value)||0;
+      const startDate = document.getElementById('f_startdate').value || '';
+      const endDate = document.getElementById('f_enddate').value || '';
+      let meetLink = document.getElementById('f_meet').value.trim();
+      if(meetLink && !/^https?:\/\//i.test(meetLink)) meetLink = 'https://'+meetLink;
+      if(!name || !start || !end){ alert('Please fill in at least the student name and times.'); return; }
+      if(startDate && endDate && endDate < startDate){ alert('End date must be on or after the start date.'); return; }
+      if(editing){
+        Object.assign(editing, {name,subject,day,start,end,rateType:selectedRate,rate,meetLink,startDate,endDate});
+      } else {
+        classes.push({id:uid(),name,subject,day,start,end,rateType:selectedRate,rate,meetLink,startDate,endDate});
+      }
+      await saveClasses();
+      showClassForm=false; editingClassId=null; render();
+    });
+  }
+
+  document.querySelectorAll('.icon-btn.edit').forEach(b=>{
+    b.addEventListener('click', ()=>{ editingClassId=b.dataset.id; showClassForm=true; render(); });
+  });
+  document.querySelectorAll('.icon-btn.del').forEach(b=>{
+    b.addEventListener('click', async ()=>{
+      if(confirm('Permanently remove this class? This also erases its cancellation, paid, and earnings history for every past week and month. If your student just finished, use Edit → End date instead to keep that history.')){
+        classes = classes.filter(c=>c.id!==b.dataset.id);
+        logs = logs.filter(l=>l.classId!==b.dataset.id);
+        paidLogs = paidLogs.filter(p=>p.classId!==b.dataset.id);
+        await saveClasses(); await saveLogs(); await savePaidLogs(); render();
+      }
+    });
+  });
+}
+
+function renderLog(){
+  const el = document.getElementById('logView');
+
+  let formHtml = '';
+  if(showLogForm){
+    const options = classes.map(c=>`<option value="${c.id}">${c.name}${c.subject?` · ${c.subject}`:''} (${DAY_FULL[c.day]} ${fmtTime(c.start)})</option>`).join('');
+    formHtml = `
+      <div class="card-form">
+        <h3>Log a cancellation or postponement</h3>
+        <div class="field-row">
+          <div class="field"><label>Class</label><select id="lg_class">${options}</select></div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Status</label>
+            <div class="toggle-group">
+              <button type="button" data-status="cancelled" class="selected">Cancelled</button>
+              <button type="button" data-status="postponed">Postponed</button>
+            </div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Original date</label><input type="date" id="lg_date"></div>
+        </div>
+        <div class="field-row" id="lg_newdate_row" style="display:none;">
+          <div class="field"><label>Moved to date</label><input type="date" id="lg_newdate"></div>
+          <div class="field"><label>New time (optional)</label><input type="time" id="lg_newtime"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Note (optional)</label><textarea id="lg_note" rows="2" placeholder="e.g. student unwell"></textarea></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn secondary" id="cancelLogFormBtn">Cancel</button>
+          <button class="btn" id="saveLogBtn">Save entry</button>
+        </div>
+      </div>
+    `;
+  }
+
+  const sorted = logs.slice().sort((a,b)=> b.date.localeCompare(a.date));
+  let listHtml = '';
+  if(sorted.length===0){
+    listHtml = `<div class="empty-state">No cancellations or postponements logged.</div>`;
+  } else {
+    sorted.forEach(l=>{
+      const cls = classes.find(c=>c.id===l.classId);
+      const clsName = cls ? `${cls.name}${cls.subject?` · ${cls.subject}`:''}` : '(class removed)';
+      listHtml += `
+        <div class="log-entry">
+          <div class="top-row">
+            <div>
+              <div class="name">${clsName}</div>
+              <div class="date">${new Date(l.date+'T12:00:00').toDateString()}
+                <span class="badge ${l.status==='cancelled'?'cancelled':'postponed'}">${l.status==='cancelled'?'Cancelled':'Postponed'}</span>
+              </div>
+            </div>
+          </div>
+          ${l.status==='postponed' && l.newDate ? `<div class="move-line">→ Moved to ${new Date(l.newDate+'T12:00:00').toDateString()}${l.newTime?` at ${fmtTime(l.newTime)}`:''}</div>` : ''}
+          ${l.note ? `<div class="note">${l.note}</div>` : ''}
+          <div class="row-actions">
+            <button class="btn danger-outline small" data-id="${l.id}">Remove entry</button>
+          </div>
+        </div>`;
+    });
+  }
+
+  el.innerHTML = `
+    <div class="section-title">Cancellations & postponements</div>
+    <div class="helper-text">Log a change here — cancelled classes are subtracted from this week's expected earnings automatically.</div>
+    ${!showLogForm && classes.length>0 ? `<button class="btn block" id="addLogBtn">Log a change</button>` : ''}
+    ${classes.length===0 ? `<div class="empty-state">Add a class first before logging changes.</div>` : ''}
+    ${formHtml}
+    ${listHtml}
+  `;
+
+  if(!showLogForm){
+    const addBtn = document.getElementById('addLogBtn');
+    if(addBtn) addBtn.addEventListener('click', ()=>{ showLogForm=true; render(); });
+  } else {
+    let selectedStatus = 'cancelled';
+    document.querySelectorAll('[data-status]').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        selectedStatus = b.dataset.status;
+        document.querySelectorAll('[data-status]').forEach(x=>x.classList.remove('selected'));
+        b.classList.add('selected');
+        document.getElementById('lg_newdate_row').style.display = selectedStatus==='postponed' ? 'flex' : 'none';
+      });
+    });
+    document.getElementById('cancelLogFormBtn').addEventListener('click', ()=>{ showLogForm=false; render(); });
+    document.getElementById('saveLogBtn').addEventListener('click', async ()=>{
+      const classId = document.getElementById('lg_class').value;
+      const date = document.getElementById('lg_date').value;
+      const note = document.getElementById('lg_note').value.trim();
+      if(!date){ alert('Please pick the original class date.'); return; }
+      const entry = {id:uid(), classId, status:selectedStatus, date, note};
+      if(selectedStatus==='postponed'){
+        entry.newDate = document.getElementById('lg_newdate').value || '';
+        entry.newTime = document.getElementById('lg_newtime').value || '';
+      }
+      logs.push(entry);
+      await saveLogs();
+      showLogForm=false; render();
+    });
+  }
+
+  document.querySelectorAll('.btn.danger-outline.small').forEach(b=>{
+    b.addEventListener('click', async ()=>{
+      logs = logs.filter(l=>l.id!==b.dataset.id);
+      await saveLogs(); render();
+    });
+  });
+}
+
+function exportWorkCSV(){
+  if(workLogs.length===0){ alert('No shifts to export.'); return; }
+  const sorted = workLogs.slice().sort((a,b)=> a.date.localeCompare(b.date));
+  const rows = [['Date','Clock In','Clock Out','Hours','Rate (RM/hr)','Earned (RM)']];
+  sorted.forEach(w=>{
+    const hrs = workEntryHours(w);
+    rows.push([w.date, w.clockIn, w.clockOut, hrs.toFixed(2), w.rate, workEntryEarning(w).toFixed(2)]);
+  });
+  const totalHrs = sorted.reduce((s,w)=>s+workEntryHours(w),0);
+  const totalEarned = sorted.reduce((s,w)=>s+workEntryEarning(w),0);
+  rows.push([]);
+  rows.push(['TOTAL','','',totalHrs.toFixed(2),'',totalEarned.toFixed(2)]);
+  const csv = rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  const blob = new Blob(['﻿'+csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'seo-job-hours-'+toLocalISO(new Date())+'.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function renderWork(){
+  const el = document.getElementById('workView');
+  const editing = editingWorkId ? workLogs.find(w=>w.id===editingWorkId) : null;
+  const weekTotal = workWeeklyTotal();
+  const {start:mS, end:mE} = monthRangeFor(startOfMonth(new Date()));
+  const monthTotal = workMonthlyTotal(mS, mE);
+
+  let formHtml = '';
+  if(showWorkForm){
+    const w = editing || {date:'', clockIn:'09:00', clockOut:'18:00', rate:DEFAULT_SEO_RATE};
+    formHtml = `
+      <div class="card-form">
+        <h3>${editing?'Edit shift':'Log a shift'}</h3>
+        <div class="field-row">
+          <div class="field"><label>Date</label><input type="date" id="w_date" value="${w.date}"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Clock in</label><input type="time" id="w_in" value="${w.clockIn}"></div>
+          <div class="field"><label>Clock out</label><input type="time" id="w_out" value="${w.clockOut}"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Rate (RM/hr)</label><input type="number" step="0.01" id="w_rate" value="${w.rate}"></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn secondary" id="cancelWorkFormBtn">Cancel</button>
+          <button class="btn" id="saveWorkBtn">${editing?'Save changes':'Add shift'}</button>
+        </div>
+      </div>
+    `;
+  }
+
+  const sorted = workLogs.slice().sort((a,b)=> b.date.localeCompare(a.date));
+  let listHtml = '';
+  if(sorted.length===0){
+    listHtml = `<div class="empty-state">No shifts logged yet.</div>`;
+  } else {
+    sorted.forEach(w=>{
+      listHtml += `
+        <div class="manage-row">
+          <div class="info">
+            <div class="name">${new Date(w.date+'T12:00:00').toDateString()}</div>
+            <div class="meta">${fmtTime(w.clockIn)}–${fmtTime(w.clockOut)} · ${workEntryHours(w).toFixed(2)} hrs · RM${w.rate}/hr · ${fmtMoney(workEntryEarning(w))}</div>
+          </div>
+          <div class="actions">
+            <button class="icon-btn edit" data-id="${w.id}" title="Edit">✎</button>
+            <button class="icon-btn del" data-id="${w.id}" title="Remove">✕</button>
+          </div>
+        </div>`;
+    });
+  }
+
+  el.innerHTML = `
+    <div class="section-title">SEO job hours</div>
+    <div class="helper-text">Clock in and out for each shift within 9am–6pm — pay is calculated at RM${DEFAULT_SEO_RATE}/hr by default, editable per shift.</div>
+    <div class="totals-row" style="margin-bottom:16px;">
+      <div class="total-card gold"><div class="num">${fmtMoney(weekTotal)}</div><div class="cap">This week</div></div>
+      <div class="total-card"><div class="num">${fmtMoney(monthTotal)}</div><div class="cap">This month</div></div>
+    </div>
+    ${!showWorkForm ? `<div style="display:flex;gap:8px;margin-bottom:4px;">
+      <button class="btn block" id="addWorkBtn" style="flex:1">Log a shift</button>
+      <button class="btn block secondary" id="exportWorkBtn" style="flex:0 0 auto">Export CSV</button>
+    </div>` : ''}
+    ${formHtml}
+    <div class="manage-list">${listHtml}</div>
+  `;
+
+  if(!showWorkForm){
+    document.getElementById('addWorkBtn').addEventListener('click', ()=>{
+      showWorkForm=true; editingWorkId=null; render();
+    });
+    document.getElementById('exportWorkBtn').addEventListener('click', exportWorkCSV);
+  } else {
+    document.getElementById('cancelWorkFormBtn').addEventListener('click', ()=>{
+      showWorkForm=false; editingWorkId=null; render();
+    });
+    document.getElementById('saveWorkBtn').addEventListener('click', async ()=>{
+      const date = document.getElementById('w_date').value;
+      const clockIn = document.getElementById('w_in').value;
+      const clockOut = document.getElementById('w_out').value;
+      const rate = parseFloat(document.getElementById('w_rate').value)||0;
+      if(!date || !clockIn || !clockOut){ alert('Please fill in the date and both clock times.'); return; }
+      if(editing){
+        Object.assign(editing, {date,clockIn,clockOut,rate});
+      } else {
+        workLogs.push({id:uid(),date,clockIn,clockOut,rate});
+      }
+      await saveWorkLogs();
+      showWorkForm=false; editingWorkId=null; render();
+    });
+  }
+
+  document.querySelectorAll('#workView .icon-btn.edit').forEach(b=>{
+    b.addEventListener('click', ()=>{ editingWorkId=b.dataset.id; showWorkForm=true; render(); });
+  });
+  document.querySelectorAll('#workView .icon-btn.del').forEach(b=>{
+    b.addEventListener('click', async ()=>{
+      if(confirm('Remove this shift entry?')){
+        workLogs = workLogs.filter(w=>w.id!==b.dataset.id);
+        await saveWorkLogs(); render();
+      }
+    });
+  });
+}
+
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e)=>{
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  if(!localStorage.getItem('install-banner-dismissed')){
+    const banner = document.getElementById('installBanner');
+    if(banner) banner.classList.add('visible');
+  }
+});
+window.addEventListener('appinstalled', ()=>{
+  deferredInstallPrompt = null;
+  const banner = document.getElementById('installBanner');
+  if(banner) banner.classList.remove('visible');
+});
+function setupInstallBanner(){
+  const installBtn = document.getElementById('installBtn');
+  const dismissBtn = document.getElementById('installDismiss');
+  if(installBtn) installBtn.addEventListener('click', ()=>{
+    if(deferredInstallPrompt){
+      deferredInstallPrompt.prompt();
+      deferredInstallPrompt.userChoice.finally(()=>{
+        deferredInstallPrompt = null;
+        const banner = document.getElementById('installBanner');
+        if(banner) banner.classList.remove('visible');
+      });
+    }
+  });
+  if(dismissBtn) dismissBtn.addEventListener('click', ()=>{
+    try{ localStorage.setItem('install-banner-dismissed', '1'); }catch(e){}
+    const banner = document.getElementById('installBanner');
+    if(banner) banner.classList.remove('visible');
+  });
+  if(deferredInstallPrompt && !localStorage.getItem('install-banner-dismissed')){
+    const banner = document.getElementById('installBanner');
+    if(banner) banner.classList.add('visible');
+  }
+}
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+
+loadData();
+</script>
+</body>
+</html>
